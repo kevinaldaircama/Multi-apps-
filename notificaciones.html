@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Notificaciones</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:#f1f5f9;
+  display:flex;
+  min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:240px;
+  background: linear-gradient(180deg,#7c3aed,#4f46e5);
+  color:white;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+
+.sidebar h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.sidebar a{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:white;
+  text-decoration:none;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:8px;
+}
+
+.sidebar a:hover{
+  background:rgba(255,255,255,0.2);
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:20px;
+}
+
+/* HEADER */
+.header{
+  background:white;
+  padding:15px 20px;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
+/* LIST */
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.item{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.item:hover{
+  transform:translateY(-2px);
+}
+
+.icon{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:#7c3aed;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.text{
+  flex:1;
+}
+
+.text strong{
+  display:block;
+}
+
+.text small{
+  color:#6b7280;
+}
+
+.unread{
+  border-left:5px solid #7c3aed;
+}
+
+/* EMPTY */
+.empty{
+  text-align:center;
+  margin-top:50px;
+  color:#6b7280;
+}
+
+/* BUTTON */
+.btn{
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  text-decoration:none;
+  display:inline-block;
+}
+
+.ok{background:#22c55e;color:white;}
+.bad{background:#ef4444;color:white;}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.5);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.modal-content{
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:400px;
+  text-align:center;
+}
+
+.close{
+  margin-top:10px;
+  background:#7c3aed;
+  color:white;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  body{flex-direction:column;}
+  .sidebar{
+    width:100%;
+    flex-direction:row;
+    justify-content:space-around;
+  }
+  .sidebar h2{display:none;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Apps GO</h2>
+  <a href="panel.html"><i class="fa-solid fa-house"></i> Inicio</a>
+  <a href="#"><i class="fa-solid fa-upload"></i> Subir App</a>
+  <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
+  <a href="#"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+</div>
+
+<div class="main">
+
+  <div class="header">
+    <h2>Notificaciones</h2>
+  </div>
+
+  <div id="lista" class="list"></div>
+
+  <div id="empty" class="empty">
+    <i class="fa-regular fa-bell" style="font-size:40px;"></i>
+    <p>No tienes notificaciones</p>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Info</h3>
+    <p id="modalText"></p>
+    <button class="close" onclick="cerrarModal()">Cerrar</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    window.location = "login.html";
+    return;
+  }
+
+  cargar(user.uid);
+});
+
+async function cargar(uid){
+
+  const lista = document.getElementById("lista");
+  const empty = document.getElementById("empty");
+
+  lista.innerHTML = "";
+
+  const q = query(collection(db,"notificaciones"), where("uid","==",uid));
+  const snap = await getDocs(q);
+
+  if(snap.empty){
+    empty.style.display="block";
+    return;
+  }
+
+  empty.style.display="none";
+
+  snap.forEach(docu => {
+    let d = docu.data();
+
+    let acciones = "";
+
+    // ✅ APROBADA
+    if(d.tipo === "aprobada"){
+      acciones = `<a class="btn ok" href="${d.url}" target="_blank">Ver app</a>`;
+    }
+
+    // ❌ RECHAZADA
+    if(d.tipo === "rechazada"){
+      acciones = `<button class="btn bad" onclick="verMotivo('${d.motivo}')">Ver motivo</button>`;
+    }
+
+    let div = document.createElement("div");
+    div.className = "item " + (d.leido ? "" : "unread");
+
+    div.innerHTML = `
+      <div class="icon"><i class="fa-solid fa-bell"></i></div>
+      <div class="text">
+        <strong>${d.titulo || "Notificación"}</strong>
+        <small>${d.mensaje || ""}</small>
+        <div style="margin-top:8px">${acciones}</div>
+      </div>
+    `;
+
+    div.onclick = () => {
+      if(d.tipo === "rechazada") verMotivo(d.motivo);
+    };
+
+    lista.appendChild(div);
+  });
+}
+
+// MODAL
+window.verMotivo = function(motivo){
+  document.getElementById("modalTitle").innerText = "App rechazada";
+  document.getElementById("modalText").innerText = motivo || "Sin motivo";
+  document.getElementById("modal").style.display = "flex";
+}
+
+window.cerrarModal = function(){
+  document.getElementById("modal").style.display = "none";
+}
+</script>
+
+</body>
+</html>

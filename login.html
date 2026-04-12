@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: radial-gradient(circle at top, #6d28d9, #1e1b4b);
+}
+
+/* CARD */
+.card{
+  width:100%;
+  max-width:380px;
+  background: linear-gradient(180deg,#ffffff,#f8fafc);
+  border-radius:18px;
+  padding:30px 25px;
+  box-shadow:0 25px 60px rgba(0,0,0,0.4);
+  animation:fade .5s ease;
+}
+
+/* HEADER */
+.header{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.header h2{
+  margin:0;
+  font-weight:600;
+}
+
+.header p{
+  font-size:13px;
+  color:#64748b;
+}
+
+/* INPUT */
+.input{
+  margin-bottom:15px;
+}
+
+.input input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #e2e8f0;
+  background:#f1f5f9;
+  outline:none;
+  transition:0.2s;
+}
+
+.input input:focus{
+  border-color:#7c3aed;
+  background:white;
+  box-shadow:0 0 0 3px rgba(124,58,237,0.2);
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background: linear-gradient(135deg,#7c3aed,#a855f7);
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 25px rgba(124,58,237,0.4);
+}
+
+/* LINKS */
+.links{
+  margin-top:12px;
+  text-align:center;
+}
+
+.links span{
+  display:block;
+  font-size:13px;
+  color:#7c3aed;
+  cursor:pointer;
+  margin-top:5px;
+}
+
+/* MENSAJE */
+#msg{
+  margin-top:15px;
+  text-align:center;
+  font-size:13px;
+}
+
+/* ANIMACION */
+@keyframes fade{
+  from{opacity:0; transform:translateY(20px);}
+  to{opacity:1; transform:translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h2>Iniciar sesión</h2>
+
+  <div class="input">
+    <input type="email" id="email" placeholder="Correo electrónico">
+  </div>
+
+  <div class="input">
+    <input type="password" id="password" placeholder="Contraseña">
+  </div>
+
+  <button onclick="login()">Entrar</button>
+
+  <div class="link" onclick="recuperar()">¿Olvidaste tu contraseña?</div>
+
+  <div id="verificar" style="display:none;">
+    <div class="link" onclick="reenviar()">Reenviar verificación</div>
+  </div>
+
+  <p id="msg"></p>
+
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let usuarioActual = null;
+
+// 🔐 DETECTAR SESIÓN AUTOMÁTICA
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    usuarioActual = user;
+
+    if(!user.emailVerified){
+      document.getElementById("msg").innerText = "⚠️ Verifica tu correo";
+      document.getElementById("verificar").style.display="block";
+      signOut(auth); // 🔥 BLOQUEA acceso real
+      return;
+    }
+
+    // ✅ Usuario válido → entrar
+    window.location = "home";
+  }
+});
+
+// 🔐 LOGIN
+window.login = async function(){
+  let email = document.getElementById("email").value;
+  let pass = document.getElementById("password").value;
+  let msg = document.getElementById("msg");
+
+  try{
+    let userCred = await signInWithEmailAndPassword(auth, email, pass);
+    usuarioActual = userCred.user;
+
+    if(!usuarioActual.emailVerified){
+      msg.innerText = "⚠️ Verifica tu correo antes de entrar";
+      document.getElementById("verificar").style.display="block";
+
+      await signOut(auth); // 🔥 BLOQUEO REAL
+      return;
+    }
+
+    msg.innerText = "✅ Bienvenido!";
+    window.location = "home";
+
+  }catch(e){
+    msg.innerText = "Error: " + e.message;
+  }
+}
+
+// 📩 REENVIAR VERIFICACIÓN
+window.reenviar = async function(){
+  let email = document.getElementById("email").value;
+
+  if(!email){
+    msg.innerText = "Escribe tu correo primero";
+    return;
+  }
+
+  try{
+    let cred = await signInWithEmailAndPassword(auth, email, document.getElementById("password").value);
+    await sendEmailVerification(cred.user);
+    msg.innerText = "📩 Correo reenviado";
+    await signOut(auth);
+  }catch(e){
+    msg.innerText = e.message;
+  }
+}
+
+// 🔑 RECUPERAR CONTRASEÑA
+window.recuperar = async function(){
+  let email = document.getElementById("email").value;
+
+  if(!email){
+    msg.innerText = "Ingresa tu correo primero";
+    return;
+  }
+
+  try{
+    await sendPasswordResetEmail(auth, email);
+    msg.innerText = "📧 Revisa tu correo";
+  }catch(e){
+    msg.innerText = e.message;
+  }
+}
+</script>
+
+</body>
+</html>

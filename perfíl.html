@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mi Perfil</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:#f1f5f9;
+  display:flex;
+  min-height:100vh;
+}
+
+/* SIDEBAR (IGUAL AL PANEL) */
+.sidebar{
+  width:240px;
+  background: linear-gradient(180deg,#7c3aed,#4f46e5);
+  color:white;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+
+.sidebar h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.sidebar a{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:white;
+  text-decoration:none;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:8px;
+  transition:0.2s;
+}
+
+.sidebar a:hover{
+  background:rgba(255,255,255,0.2);
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:20px;
+}
+
+/* HEADER */
+.header{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom:20px;
+}
+
+/* CARD */
+.card{
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+  max-width:600px;
+}
+
+/* PERFIL HEADER */
+.profile-top{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.avatar{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:#7c3aed;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  margin:0 auto 10px;
+}
+
+/* INPUTS */
+.input{
+  margin-bottom:15px;
+}
+
+.input label{
+  font-size:13px;
+  color:#6b7280;
+}
+
+.input input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  margin-top:5px;
+  background:#f9fafb;
+}
+
+.input input:focus{
+  outline:none;
+  border-color:#7c3aed;
+}
+
+/* BOTON */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#7c3aed;
+  color:white;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+button:hover{
+  background:#6d28d9;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  body{
+    flex-direction:column;
+  }
+
+  .sidebar{
+    width:100%;
+    flex-direction:row;
+    justify-content:space-around;
+  }
+
+  .sidebar h2{
+    display:none;
+  }
+
+  .sidebar a{
+    flex-direction:column;
+    font-size:12px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>Android app store</h2>
+
+  <a href="home"><i class="fa-solid fa-house"></i> Inicio</a>
+  <a href="subir"><i class="fa-solid fa-upload"></i> Subir App</a>
+  <a href="perfil"><i class="fa-solid fa-user"></i> Mi Perfil</a>
+  <a href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="header">
+    <h2>Mi Perfil</h2>
+  </div>
+
+  <div class="card">
+
+    <!-- INFO SUPERIOR -->
+    <div class="profile-top">
+      <div class="avatar" id="avatar">U</div>
+      <h3 id="nombreTxt">Usuario</h3>
+      <p id="correoTxt">correo@email.com</p>
+      <small id="fecha">Miembro desde...</small>
+    </div>
+
+    <!-- DATOS -->
+    <div class="input">
+      <label>Nombre *</label>
+      <input type="text" id="nombre">
+    </div>
+
+    <div class="input">
+      <label>Correo *</label>
+      <input type="email" id="correo" disabled>
+    </div>
+
+    <div class="input">
+      <label>Telegram</label>
+      <input type="text" id="telegram">
+    </div>
+
+    <div class="input">
+      <label>WhatsApp</label>
+      <input type="text" id="whatsapp">
+    </div>
+
+    <h3>Cambiar contraseña</h3>
+
+    <div class="input">
+      <input type="password" id="actual" placeholder="Contraseña actual">
+    </div>
+
+    <div class="input">
+      <input type="password" id="nueva" placeholder="Nueva contraseña">
+    </div>
+
+    <div class="input">
+      <input type="password" id="confirmar" placeholder="Confirmar nueva">
+    </div>
+
+    <button onclick="guardar()">Guardar cambios</button>
+
+    <p id="msg"></p>
+
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let userActual;
+
+// 🔒 PROTEGER
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    window.location="login";
+    return;
+  }
+
+  userActual = user;
+
+  document.getElementById("correo").value = user.email;
+  document.getElementById("correoTxt").innerText = user.email;
+
+  let ref = doc(db,"usuarios",user.uid);
+  let snap = await getDoc(ref);
+
+  if(snap.exists()){
+    let d = snap.data();
+
+    document.getElementById("nombre").value = d.nombre;
+    document.getElementById("telegram").value = d.telegram || "";
+    document.getElementById("whatsapp").value = d.whatsapp || "";
+
+    document.getElementById("nombreTxt").innerText = d.nombre;
+    document.getElementById("avatar").innerText = d.nombre.charAt(0);
+
+    if(d.fecha){
+      let f = d.fecha.toDate();
+      document.getElementById("fecha").innerText =
+        "Miembro desde " + f.toLocaleDateString();
+    }
+  }
+});
+
+// 💾 GUARDAR
+window.guardar = async function(){
+
+  let nombre = document.getElementById("nombre").value;
+  let telegram = document.getElementById("telegram").value;
+  let whatsapp = document.getElementById("whatsapp").value;
+
+  let actual = document.getElementById("actual").value;
+  let nueva = document.getElementById("nueva").value;
+  let confirmar = document.getElementById("confirmar").value;
+
+  let msg = document.getElementById("msg");
+
+  try{
+    await updateDoc(doc(db,"usuarios",userActual.uid),{
+      nombre, telegram, whatsapp
+    });
+
+    if(nueva){
+      if(nueva !== confirmar){
+        msg.innerText="Las contraseñas no coinciden";
+        return;
+      }
+
+      let cred = EmailAuthProvider.credential(userActual.email, actual);
+      await reauthenticateWithCredential(userActual, cred);
+      await updatePassword(userActual, nueva);
+    }
+
+    msg.innerText="✅ Guardado";
+
+  }catch(e){
+    msg.innerText=e.message;
+  }
+}
+
+// 🚪 LOGOUT
+window.logout = async function(){
+  await signOut(auth);
+  window.location="login";
+}
+</script>
+
+</body>
+</html>

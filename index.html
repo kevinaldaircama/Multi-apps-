@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Android app store - Consola de Desarrolladores</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:#f8fafc;
+  color:#111827;
+}
+
+/* NAVBAR */
+.nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 25px;
+  background:white;
+  box-shadow:0 5px 15px rgba(0,0,0,0.06);
+  position:sticky;
+  top:0;
+}
+
+.logo{
+  font-weight:700;
+  color:#7c3aed;
+  font-size:18px;
+}
+
+.nav a{
+  margin-left:15px;
+  text-decoration:none;
+  color:#374151;
+  font-size:14px;
+}
+
+.nav a:hover{
+  color:#7c3aed;
+}
+
+/* HERO */
+.hero{
+  padding:70px 20px;
+  text-align:center;
+  background: linear-gradient(135deg,#7c3aed,#a855f7);
+  color:white;
+}
+
+.hero h1{
+  font-size:32px;
+  margin-bottom:10px;
+}
+
+.hero p{
+  max-width:700px;
+  margin:auto;
+  font-size:15px;
+  opacity:0.95;
+}
+
+/* BOTONES */
+.buttons{
+  margin-top:20px;
+}
+
+.btn{
+  display:inline-block;
+  padding:12px 18px;
+  margin:5px;
+  border-radius:10px;
+  text-decoration:none;
+  font-size:14px;
+}
+
+.btn-white{
+  background:white;
+  color:#7c3aed;
+}
+
+.btn-outline{
+  border:1px solid white;
+  color:white;
+}
+
+/* STATS */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+  padding:30px 20px;
+}
+
+.stat{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+.stat h2{
+  color:#7c3aed;
+}
+
+/* SECTION */
+.section{
+  padding:40px 20px;
+  max-width:1000px;
+  margin:auto;
+}
+
+.section h2{
+  margin-bottom:10px;
+  color:#111827;
+}
+
+.section p{
+  color:#6b7280;
+  line-height:1.6;
+}
+
+/* STEPS */
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+  margin-top:20px;
+}
+
+.step{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* FOOTER */
+.footer{
+  background:#111827;
+  color:white;
+  padding:40px 20px;
+  margin-top:40px;
+}
+
+.footer-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+}
+
+.footer a{
+  display:block;
+  color:#d1d5db;
+  text-decoration:none;
+  margin:6px 0;
+  font-size:13px;
+}
+
+.footer a:hover{
+  color:white;
+}
+
+.bottom{
+  text-align:center;
+  margin-top:20px;
+  font-size:12px;
+  color:#9ca3af;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Consola para desarrolladores de Android app store</h1>
+  <p>
+    Publica tu aplicación y permite que otros la descarguen en nuestra plataforma abierta,
+    sin restricciones ni costos ocultos.
+  </p>
+
+  <div class="buttons">
+    <a href="registro.html" class="btn btn-white">Crear cuenta</a>
+    <a href="login.html" class="btn btn-outline">Iniciar sesión</a>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+
+  <div class="stat">
+    <h2>+100M</h2>
+    <p>Usuarios que suben sus apps</p>
+  </div>
+
+  <div class="stat">
+    <h2>+130K</h2>
+    <p>Desarrolladores registrados</p>
+  </div>
+
+  <div class="stat">
+    <h2>Global</h2>
+    <p>Distribución en todo el mundo</p>
+  </div>
+
+</div>
+
+<!-- SECTION -->
+<div class="section">
+
+  <h2>Tú tienes el control</h2>
+  <p>
+    En Android app store creemos en la libertad del software. Tú decides cómo distribuir tu app,
+    sin intermediarios ni restricciones.
+  </p>
+
+  <div class="steps">
+
+    <div class="step">
+      <h3>1. Regístrate</h3>
+      <p>Crea tu cuenta como desarrollador.</p>
+    </div>
+
+    <div class="step">
+      <h3>2. Publica tu app</h3>
+      <p>Sube tu aplicación en segundos.</p>
+    </div>
+
+    <div class="step">
+      <h3>3. Gana visibilidad</h3>
+      <p>Llega a usuarios de todo el mundo.</p>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+
+  <div class="footer-grid">
+
+    <div>
+      <h3>Android app store</h3>
+      <p style="color:#9ca3af;font-size:13px;">
+        Plataforma abierta para publicar y descargar aplicaciones.
+      </p>
+    </div>
+
+    <div>
+      <h4>Descubre</h4>
+      <a href="#">Apps</a>
+      <a href="#">Desarrolladores</a>
+      <a href="#">Estadísticas</a>
+    </div>
+
+    <div>
+      <h4>Nosotros</h4>
+      <a href="#">Sobre nosotros</a>
+      <a href="#">Contacto</a>
+    </div>
+
+    <div>
+      <h4>Legal</h4>
+      <a href="#">Privacidad</a>
+      <a href="#">Términos</a>
+    </div>
+
+  </div>
+
+  <div class="bottom">
+    © 2026 Android app store - Plataforma de distribución de aplicaciones 
+  </div>
+
+</div>
+
+</body>
+</html>

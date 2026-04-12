@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<!-- ICONOS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:#f1f5f9;
+  display:flex;
+  min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:240px;
+  background: linear-gradient(180deg,#7c3aed,#4f46e5);
+  color:white;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+
+.sidebar h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.sidebar a{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:white;
+  text-decoration:none;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:8px;
+  transition:0.2s;
+}
+
+.sidebar a:hover{
+  background:rgba(255,255,255,0.2);
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:20px;
+}
+
+/* HEADER */
+.header{
+  background:white;
+  padding:15px 20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom:20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* NOTIFICACIONES */
+.actions{
+  display:flex;
+  align-items:center;
+}
+
+.notif{
+  position:relative;
+  font-size:20px;
+  color:#7c3aed;
+  text-decoration:none;
+}
+
+.badge{
+  position:absolute;
+  top:-6px;
+  right:-8px;
+  background:red;
+  color:white;
+  font-size:11px;
+  padding:3px 6px;
+  border-radius:50%;
+}
+
+/* BALANCE */
+.balance{
+  background: linear-gradient(135deg,#7c3aed,#a855f7);
+  color:white;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:20px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+  gap:15px;
+}
+
+/* CARDS */
+.card{
+  background:white;
+  padding:18px;
+  border-radius:14px;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,0.06);
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+}
+
+.card i{
+  font-size:20px;
+  margin-bottom:5px;
+  color:#7c3aed;
+}
+
+/* APPS */
+.apps{
+  background:white;
+  margin-top:20px;
+  padding:20px;
+  border-radius:14px;
+}
+
+/* BOTON */
+.btn{
+  display:inline-block;
+  margin-top:10px;
+  padding:10px 16px;
+  background: linear-gradient(135deg,#7c3aed,#a855f7);
+  color:white;
+  border-radius:10px;
+  text-decoration:none;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+
+  body{
+    flex-direction:column;
+  }
+
+  .sidebar{
+    width:100%;
+    flex-direction:row;
+    justify-content:space-around;
+    align-items:center;
+    padding:10px;
+  }
+
+  .sidebar h2{
+    display:none;
+  }
+
+  .sidebar a{
+    flex-direction:column;
+    font-size:12px;
+    padding:8px;
+  }
+
+  .main{
+    padding:15px;
+  }
+}
+
+@media(max-width:500px){
+  .grid{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>Android app store</h2>
+
+  <a href="#"><i class="fa-solid fa-house"></i> Inicio</a>
+  <a href="subir"><i class="fa-solid fa-upload"></i> Subir App</a>
+  <a href="perfil"><i class="fa-solid fa-user"></i> Mi Perfil</a>
+  <a href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- HEADER -->
+  <div class="header">
+
+    <h2>Hola, <span id="nombre">Usuario</span></h2>
+
+    <div class="actions">
+      <a href="notificaciones.html" class="notif">
+        <i class="fa-solid fa-bell"></i>
+        <span class="badge" id="notifCount">0</span>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- BALANCE -->
+  <div class="balance">
+    <h3>Balance</h3>
+    <p>$0.00</p>
+    <small>Próximamente</small>
+  </div>
+
+  <!-- STATS -->
+  <div class="grid">
+
+    <div class="card">
+      <i class="fa-solid fa-mobile"></i>
+      <h3>0</h3>
+      <p>Total Apps</p>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-check"></i>
+      <h3>0</h3>
+      <p>Aprobadas</p>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-clock"></i>
+      <h3>0</h3>
+      <p>Pendientes</p>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-xmark"></i>
+      <h3>0</h3>
+      <p>Rechazadas</p>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-download"></i>
+      <h3>0</h3>
+      <p>Descargas</p>
+    </div>
+
+  </div>
+
+  <!-- APPS -->
+  <div class="apps">
+    <h3>Mis Apps</h3>
+    <p>Aún no has subido ninguna app.</p>
+    <a class="btn" href="#">Subir mi primera app</a>
+  </div>
+
+</div>
+
+<<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+  getFirestore, 
+  doc, 
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// 🔒 PROTECCIÓN + CARGA
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    window.location = "login";
+    return;
+  }
+
+  if(!user.emailVerified){
+    window.location = "login";
+    return;
+  }
+
+  // 👤 DATOS USUARIO
+  let docRef = doc(db, "usuarios", user.uid);
+  let docSnap = await getDoc(docRef);
+
+  if(docSnap.exists()){
+    document.getElementById("nombre").innerText = docSnap.data().nombre;
+  }
+
+  // 📦 CONSULTAR APPS DEL USUARIO
+  const q = query(
+    collection(db,"apps"),
+    where("uid","==",user.uid)
+  );
+
+  const snap = await getDocs(q);
+
+  let total = 0;
+  let pendientes = 0;
+  let aprobadas = 0;
+  let rech = 0;
+
+  let contenedor = document.querySelector(".apps");
+
+  contenedor.innerHTML = "<h3>Mis Apps</h3>";
+
+  if(snap.empty){
+    contenedor.innerHTML += `
+      <p>Aún no has subido ninguna app.</p>
+      <a class="btn" href="subir.html">Subir mi primera app</a>
+    `;
+  }else{
+
+    snap.forEach(doc => {
+      let a = doc.data();
+      total++;
+
+      if(a.estado === "pendiente") pendientes++;
+      if(a.estado === "aprobada") aprobadas++;
+      if(a.estado === "rechazada") rech++;
+
+      contenedor.innerHTML += `
+        <div style="
+          background:white;
+          margin-top:10px;
+          padding:10px;
+          border-radius:10px;
+          box-shadow:0 2px 10px rgba(0,0,0,0.05);
+        ">
+          <strong>${a.titulo}</strong><br>
+          <small>${a.categoria} - ${a.estado}</small>
+        </div>
+      `;
+    });
+
+    contenedor.innerHTML += `
+      <a class="btn" href="subir.html">Subir nueva app</a>
+    `;
+  }
+
+  // 📊 ACTUALIZAR STATS
+  document.querySelectorAll(".card h3")[0].innerText = total;
+  document.querySelectorAll(".card h3")[1].innerText = aprobadas;
+  document.querySelectorAll(".card h3")[2].innerText = pendientes;
+  document.querySelectorAll(".card h3")[3].innerText = rech;
+
+  // 🔔 NOTIFICACIONES (placeholder)
+  document.getElementById("notifCount").innerText = pendientes;
+});
+
+// 🚪 LOGOUT
+window.logout = async function(){
+  await signOut(auth);
+  window.location = "login";
+}
+</script>
+
+</body>
+</html>
