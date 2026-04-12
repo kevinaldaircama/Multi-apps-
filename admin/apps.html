@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Apps Admin</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:#f1f5f9;
+}
+
+/* TOP */
+.topbar{
+  background:#111827;
+  padding:12px 20px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.topbar a{
+  color:white;
+  text-decoration:none;
+  padding:6px 10px;
+  border-radius:8px;
+}
+
+.topbar a:hover{background:rgba(255,255,255,0.1);}
+
+.container{
+  padding:20px;
+  max-width:1200px;
+  margin:auto;
+}
+
+h1{margin:10px 0;}
+
+.filters{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:10px 0;
+}
+
+.filters a{
+  background:white;
+  padding:8px 12px;
+  border-radius:10px;
+  text-decoration:none;
+  color:black;
+  font-weight:600;
+}
+
+.table{
+  width:100%;
+  background:white;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+th,td{
+  padding:12px;
+  text-align:left;
+  font-size:14px;
+}
+
+th{
+  background:#111827;
+  color:white;
+}
+
+.btn{
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.ver{background:#3b82f6;color:white;}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <a href="panel.php">Dashboard</a>
+  <a href="apps.php">Apps</a>
+  <a href="usuarios.php">Usuarios</a>
+  <a href="logout.php">Salir</a>
+</div>
+
+<div class="container">
+
+<h1>Apps</h1>
+
+<div class="filters">
+  <a href="#">Todas</a>
+  <a href="#">Aprobadas</a>
+  <a href="#">Pendientes</a>
+  <a href="#">Rechazadas</a>
+</div>
+
+<table class="table">
+<thead>
+<tr>
+  <th>App</th>
+  <th>Categoría</th>
+  <th>Estado</th>
+  <th>Fecha</th>
+  <th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="tbody"></tbody>
+
+</table>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function load(){
+
+  const snap = await getDocs(collection(db,"apps"));
+  const tbody = document.getElementById("tbody");
+
+  tbody.innerHTML = "";
+
+  snap.forEach(d=>{
+    let a = d.data();
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${a.titulo}</td>
+        <td>${a.categoria}</td>
+        <td>${a.estado}</td>
+        <td>${a.fecha || "-"}</td>
+        <td>
+          <a class="btn ver" href="app_view.php?id=${d.id}">Ver</a>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+load();
+</script>
+
+</body>
+</html>

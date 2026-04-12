@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:Poppins;
+  background:linear-gradient(135deg,#1e1b4b,#7c3aed);
+}
+
+.box{
+  background:white;
+  padding:30px;
+  border-radius:15px;
+  width:320px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+  text-align:center;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#7c3aed;
+  color:white;
+  cursor:pointer;
+}
+
+#msg{
+  margin-top:10px;
+  font-size:13px;
+  color:red;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h2>Admin Panel</h2>
+
+  <input type="email" id="email" placeholder="Correo admin">
+  <input type="password" id="pass" placeholder="Contraseña">
+
+  <button onclick="loginAdmin()">Entrar</button>
+
+  <p id="msg"></p>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getAuth,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// 🔐 LOGIN ADMIN
+window.loginAdmin = async function(){
+
+  let email = document.getElementById("email").value;
+  let pass = document.getElementById("pass").value;
+  let msg = document.getElementById("msg");
+
+  try{
+
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+
+    const user = cred.user;
+
+    // 🔍 buscar rol en Firestore
+    const ref = doc(db,"usuarios",user.uid);
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()){
+      msg.innerText = "Usuario no registrado";
+      return;
+    }
+
+    const data = snap.data();
+
+    if(data.rol !== "admin"){
+      msg.innerText = "❌ No tienes permisos de admin";
+      return;
+    }
+
+    // ✅ ES ADMIN
+    window.location = "panel";
+
+  }catch(e){
+    msg.innerText = "Error: " + e.message;
+  }
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:#f1f5f9;
+}
+
+/* TOP */
+.topbar{
+  background:#111827;
+  padding:12px 20px;
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.topbar a{
+  color:white;
+  text-decoration:none;
+  font-size:14px;
+  padding:6px 10px;
+  border-radius:8px;
+}
+
+.topbar a:hover{
+  background:rgba(255,255,255,0.1);
+}
+
+/* CONTAINER */
+.container{
+  padding:20px;
+  max-width:1200px;
+  margin:auto;
+}
+
+h1{margin:10px 0;}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:15px;
+  margin:15px 0 25px;
+}
+
+.card{
+  background:white;
+  padding:18px;
+  border-radius:12px;
+  text-align:center;
+}
+
+.card h3{
+  margin:5px 0;
+  color:#4f46e5;
+}
+
+/* REQUEST */
+.request{
+  background:white;
+  padding:18px;
+  border-radius:12px;
+  margin-bottom:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+.meta{
+  font-size:13px;
+  color:#6b7280;
+  margin-top:8px;
+  line-height:1.5;
+}
+
+/* BUTTONS */
+.btns{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.btn{
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.ok{background:#22c55e;color:white;}
+.no{background:#ef4444;color:white;}
+</style>
+</head>
+
+<body>
+
+<!-- TOP MENU -->
+<div class="topbar">
+  <a href="#"><i class="fa fa-chart-line"></i> Dashboard</a>
+  <a href="apps"><i class="fa fa-mobile"></i> Apps</a>
+  <a href="usuarios"><i class="fa fa-users"></i> Usuarios</a>
+  <a href="#"><i class="fa fa-bell"></i> Notificaciones</a>
+  <a href="perfíl"><i class="fa fa-user"></i> Mi Perfil</a>
+  <a href="config"><i class="fa fa-gear"></i> Configuración</a>
+  <a href="#"><i class="fa fa-right-from-bracket"></i> Cerrar Sesión</a>
+</div>
+
+<div class="container">
+
+  <h1>Dashboard</h1>
+
+  <!-- ADMIN -->
+  <p><b>Admin:</b> kevinvps</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <h3 id="users">0</h3>
+      <p>Usuarios</p>
+    </div>
+
+    <div class="card">
+      <h3 id="apps">0</h3>
+      <p>Apps Publicadas</p>
+    </div>
+
+    <div class="card">
+      <h3 id="pending">0</h3>
+      <p>Pendientes</p>
+    </div>
+
+    <div class="card">
+      <h3 id="rejected">0</h3>
+      <p>Rechazadas</p>
+    </div>
+
+  </div>
+
+  <h2 id="titlePending">Solicitudes Pendientes 0</h2>
+
+  <div id="list"></div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  updateDoc,
+  doc,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function load(){
+
+  const appsSnap = await getDocs(collection(db,"apps"));
+  const usersSnap = await getDocs(collection(db,"usuarios"));
+
+  let list = document.getElementById("list");
+
+  let pending = 0;
+  let apps = 0;
+  let rejected = 0;
+
+  list.innerHTML = "";
+
+  appsSnap.forEach(d => {
+    let a = d.data();
+
+    if(a.estado === "aprobada") apps++;
+    if(a.estado === "rechazada") rejected++;
+    if(a.estado === "pendiente") pending++;
+
+    if(a.estado !== "pendiente") return;
+
+    list.innerHTML += `
+      <div class="request">
+
+        <h3>${a.titulo}</h3>
+
+        <div class="meta">
+          <b>${a.nombre || "Usuario"}</b> | ${a.email || ""}<br>
+          <b>Categoría:</b> ${a.categoria}<br>
+          <b>Plataforma:</b> ${a.plataforma}<br>
+          <b>URL:</b> ${a.url}<br>
+          <b>Versión:</b> ${a.version}<br>
+          <b>Tamaño:</b> ${a.tamano}<br>
+          <b>Detalle:</b> ${a.detalle}<br>
+        </div>
+
+        <div class="btns">
+          <button class="btn ok" onclick="aprobar('${d.id}','${a.uid}','${a.url}')">Aprobar</button>
+          <button class="btn no" onclick="rechazar('${d.id}','${a.uid}')">Rechazar</button>
+        </div>
+
+      </div>
+    `;
+  });
+
+  document.getElementById("users").innerText = usersSnap.size;
+  document.getElementById("apps").innerText = apps;
+  document.getElementById("pending").innerText = pending;
+  document.getElementById("rejected").innerText = rejected;
+
+  document.getElementById("titlePending").innerText =
+    "Solicitudes Pendientes " + pending;
+}
+
+/* ✅ APROBAR */
+window.aprobar = async (id, uid, url)=>{
+
+  await updateDoc(doc(db,"apps",id),{
+    estado:"aprobada"
+  });
+
+  await addDoc(collection(db,"notificaciones"),{
+    uid,
+    tipo:"aprobada",
+    url,
+    mensaje:"Tu app fue aprobada 🎉"
+  });
+
+  load();
+}
+
+/* ❌ RECHAZAR */
+window.rechazar = async (id, uid)=>{
+
+  let motivo = prompt("Escribe el motivo del rechazo:");
+
+  if(!motivo) return;
+
+  await updateDoc(doc(db,"apps",id),{
+    estado:"rechazada",
+    motivo: motivo
+  });
+
+  await addDoc(collection(db,"notificaciones"),{
+    uid,
+    tipo:"rechazada",
+    motivo
+  });
+
+  load();
+}
+
+load();
+</script>
+
+</body>
+</html>

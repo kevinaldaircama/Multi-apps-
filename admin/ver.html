@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Detalle App</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:Poppins;
+  background:#f1f5f9;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+h1{margin-bottom:10px;}
+
+.meta{
+  color:#6b7280;
+  font-size:14px;
+  line-height:1.6;
+}
+
+.btns{
+  margin-top:15px;
+  display:flex;
+  gap:10px;
+}
+
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.aprobar{background:#22c55e;color:white;}
+.rechazar{background:#ef4444;color:white;}
+.eliminar{background:#111827;color:white;}
+
+button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1 id="titulo">Cargando...</h1>
+
+<div class="meta" id="info"></div>
+
+<div class="btns">
+  <button class="aprobar" id="btnAprobar" disabled>Aprobar</button>
+  <button class="rechazar" id="btnRechazar" disabled>Rechazar</button>
+  <button class="eliminar" id="btnEliminar" disabled>Eliminar</button>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  addDoc,
+  collection
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔥 FIX CRÍTICO: evitar null ID
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
+
+let dataApp = null;
+
+// si NO hay id, detener todo
+if(!id){
+  document.getElementById("titulo").innerText = "ID no válido";
+  throw new Error("No ID");
+}
+
+// 🔥 CARGAR APP
+async function load(){
+
+  const ref = doc(db,"apps",id);
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()){
+    document.getElementById("titulo").innerText = "App no encontrada";
+    return;
+  }
+
+  dataApp = snap.data();
+
+  document.getElementById("titulo").innerText = dataApp.titulo || "Sin título";
+
+  document.getElementById("info").innerHTML = `
+    <b>Usuario:</b> ${dataApp.nombre || "-"}<br>
+    <b>Email:</b> ${dataApp.email || "-"}<br>
+    <b>Categoría:</b> ${dataApp.categoria || "-"}<br>
+    <b>Plataforma:</b> ${dataApp.plataforma || "-"}<br>
+    <b>Estado:</b> ${dataApp.estado || "-"}<br>
+    <b>Versión:</b> ${dataApp.version || "-"}<br>
+    <b>Tamaño:</b> ${dataApp.tamano || "-"}<br>
+    <b>Licencia:</b> ${dataApp.licencia || "-"}<br>
+    <b>Descargas:</b> ${dataApp.descargas || 0}<br>
+    <b>URL:</b> ${dataApp.url || "-"}<br>
+    <b>Descripción:</b> ${dataApp.detalle || "-"}<br>
+  `;
+
+  // activar botones SOLO si hay data
+  document.getElementById("btnAprobar").disabled = false;
+  document.getElementById("btnRechazar").disabled = false;
+  document.getElementById("btnEliminar").disabled = false;
+}
+
+load();
+
+// ✅ APROBAR
+document.getElementById("btnAprobar").onclick = async () => {
+
+  await updateDoc(doc(db,"apps",id),{
+    estado:"aprobada"
+  });
+
+  await addDoc(collection(db,"notificaciones"),{
+    uid: dataApp?.uid || "",
+    titulo:"App aprobada",
+    mensaje:"Tu app fue aprobada 🎉",
+    estado:"aprobada",
+    url: dataApp?.url || ""
+  });
+
+  alert("App aprobada");
+  location.reload();
+};
+
+// ❌ RECHAZAR
+document.getElementById("btnRechazar").onclick = async () => {
+
+  let motivo = prompt("Escribe el motivo del rechazo:");
+
+  if(!motivo) return;
+
+  await updateDoc(doc(db,"apps",id),{
+    estado:"rechazada",
+    motivo: motivo
+  });
+
+  await addDoc(collection(db,"notificaciones"),{
+    uid: dataApp?.uid || "",
+    titulo:"App rechazada",
+    mensaje:"Tu app fue rechazada",
+    estado:"rechazada",
+    motivo: motivo
+  });
+
+  alert("App rechazada");
+  location.reload();
+};
+
+// 🗑 ELIMINAR
+document.getElementById("btnEliminar").onclick = async () => {
+
+  if(!confirm("¿Eliminar esta app?")) return;
+
+  await deleteDoc(doc(db,"apps",id));
+
+  alert("App eliminada");
+  location.href = "apps.php";
+};
+
+</script>
+
+</body>
+</html>

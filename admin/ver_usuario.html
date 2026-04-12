@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Usuario</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{margin:0;font-family:Poppins;background:#f1f5f9;}
+
+.container{max-width:900px;margin:auto;padding:20px;}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+}
+
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  margin-right:10px;
+}
+
+.des{background:#ef4444;color:white;}
+.del{background:#111827;color:white;}
+
+.app{
+  padding:10px;
+  border:1px solid #eee;
+  margin-top:10px;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h2 id="nombre">Cargando...</h2>
+<p id="email"></p>
+<p id="estado"></p>
+
+<button class="des" id="desactivar">Desactivar</button>
+<button class="del" id="eliminar">Eliminar</button>
+
+<h3>Apps enviadas</h3>
+<div id="apps"></div>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const id = new URLSearchParams(location.search).get("id");
+
+let userData = null;
+
+// USER
+async function loadUser(){
+
+  const ref = doc(db,"usuarios",id);
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()) return;
+
+  userData = snap.data();
+
+  document.getElementById("nombre").innerText = userData.nombre;
+  document.getElementById("email").innerText = userData.email;
+  document.getElementById("estado").innerText = "Estado: " + (userData.estado || "Activo");
+}
+
+async function loadApps(){
+
+  const q = query(collection(db,"apps"), where("uid","==",id));
+  const snap = await getDocs(q);
+
+  let html = "";
+
+  snap.forEach(a=>{
+    const d = a.data();
+
+    html += `
+      <div class="app">
+        <b>${d.titulo}</b><br>
+        ${d.categoria} · ${d.plataforma}<br>
+        Estado: ${d.estado}
+      </div>
+    `;
+  });
+
+  document.getElementById("apps").innerHTML = html;
+}
+
+loadUser();
+loadApps();
+
+// DESACTIVAR
+document.getElementById("desactivar").onclick = async () => {
+
+  await updateDoc(doc(db,"usuarios",id),{
+    estado:"Desactivado"
+  });
+
+  alert("Cuenta desactivada");
+  location.reload();
+};
+
+// ELIMINAR (usuario + apps)
+document.getElementById("eliminar").onclick = async () => {
+
+  if(!confirm("Eliminar usuario y TODAS sus apps?")) return;
+
+  // borrar usuario
+  await deleteDoc(doc(db,"usuarios",id));
+
+  // borrar apps
+  const q = query(collection(db,"apps"), where("uid","==",id));
+  const snap = await getDocs(q);
+
+  snap.forEach(async (a)=>{
+    await deleteDoc(doc(db,"apps",a.id));
+  });
+
+  alert("Usuario eliminado");
+  location.href = "usuario";
+};
+
+</script>
+
+</body>
+</html>

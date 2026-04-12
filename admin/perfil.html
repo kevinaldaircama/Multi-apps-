@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mi Perfil</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:Poppins;
+  background:#f1f5f9;
+}
+
+.topbar{
+  background:#111827;
+  padding:12px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.topbar a{
+  color:white;
+  text-decoration:none;
+  padding:6px 10px;
+  border-radius:8px;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+h1{margin-bottom:5px;}
+
+input{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+
+label{
+  font-size:13px;
+  color:#555;
+}
+
+button{
+  margin-top:10px;
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  background:#4f46e5;
+  color:white;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP -->
+<div class="topbar">
+  <a href="panel.html">Panel</a>
+  <a href="apps.html">Apps</a>
+  <a href="usuarios.html">Usuarios</a>
+  <a href="perfil.html">Perfil</a>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h1>Mi Perfil</h1>
+<p><b id="user">kevinvps</b></p>
+
+<label>Nombre</label>
+<input id="nombre" type="text">
+
+<label>Correo electrónico</label>
+<input id="correo" type="text" disabled>
+
+<label>Usuario de acceso</label>
+<input id="usuario" type="text">
+
+<hr>
+
+<label>Contraseña actual</label>
+<input id="passActual" type="password">
+
+<label>Nueva contraseña</label>
+<input id="passNueva" type="password">
+
+<label>Confirmar nueva</label>
+<input id="passConfirm" type="password">
+
+<small>Deja vacío si no quieres cambiar contraseña</small>
+
+<br>
+
+<button onclick="guardar()">Guardar cambios</button>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getFirestore, doc, getDoc, updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { 
+  getAuth, updatePassword 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
+    authDomain: "dvmulti-831ba.firebaseapp.com",
+    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+    projectId: "dvmulti-831ba",
+    storageBucket: "dvmulti-831ba.firebasestorage.app",
+    messagingSenderId: "967026058841",
+    appId: "1:967026058841:web:02b42def3c608d9abef348",
+    measurementId: "G-PE1PLQF2H9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let uid = null;
+
+// 🔥 CARGAR ADMIN
+async function load(){
+  const user = auth.currentUser;
+  if(!user) return;
+
+  uid = user.uid;
+
+  const ref = doc(db,"admins",uid);
+  const snap = await getDoc(ref);
+
+  if(!snap.exists()) return;
+
+  let d = snap.data();
+
+  document.getElementById("nombre").value = d.nombre || "";
+  document.getElementById("correo").value = d.email || "";
+  document.getElementById("usuario").value = d.usuario || "";
+  document.getElementById("user").innerText = d.usuario || "Admin";
+}
+
+auth.onAuthStateChanged(load);
+
+// 💾 GUARDAR CAMBIOS
+window.guardar = async () => {
+
+  const nombre = document.getElementById("nombre").value;
+  const usuario = document.getElementById("usuario").value;
+
+  const passActual = document.getElementById("passActual").value;
+  const passNueva = document.getElementById("passNueva").value;
+  const passConfirm = document.getElementById("passConfirm").value;
+
+  // actualizar datos
+  await updateDoc(doc(db,"admins",uid),{
+    nombre,
+    usuario
+  });
+
+  // cambiar contraseña (opcional)
+  if(passNueva){
+    if(passNueva !== passConfirm){
+      return alert("Las contraseñas no coinciden");
+    }
+
+    try{
+      await updatePassword(auth.currentUser, passNueva);
+    }catch(e){
+      alert("Error al cambiar contraseña");
+    }
+  }
+
+  alert("Perfil actualizado");
+};
+</script>
+
+</body>
+</html>
