@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Subir App</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -51,7 +52,6 @@ body{
   margin-bottom:20px;
 }
 
-/* CARD */
 .card{
   background:white;
   padding:20px;
@@ -59,7 +59,6 @@ body{
   margin-bottom:20px;
 }
 
-/* INPUT */
 .input{margin-bottom:15px;}
 
 .input label{
@@ -95,6 +94,12 @@ button{
   color:white;
   font-size:16px;
   cursor:pointer;
+}
+
+.help{
+  font-size:12px;
+  color:#6b7280;
+  margin-top:-8px;
 }
 
 /* MODAL */
@@ -145,7 +150,6 @@ button{
   <a href="panel.html"><i class="fa-solid fa-house"></i> Inicio</a>
   <a href="subir.html"><i class="fa-solid fa-upload"></i> Subir App</a>
   <a href="perfil.html"><i class="fa-solid fa-user"></i> Mi Perfil</a>
-  <a href="#"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
 </div>
 
 <!-- MAIN -->
@@ -184,7 +188,6 @@ button{
         <select id="plataforma">
           <option>Android</option>
           <option>iOS</option>
-          <option>Windows</option>
           <option>Web</option>
         </select>
       </div>
@@ -225,6 +228,24 @@ button{
       <input id="whatsapp" type="text">
     </div>
 
+    <!-- ICONO -->
+    <div class="input">
+      <label>Icono de la app (512x512) *</label>
+      <input id="icono" type="file" accept="image/*">
+    </div>
+
+    <!-- CAPTURAS -->
+    <div class="input">
+      <label>Capturas de pantalla (mínimo 3) *</label>
+      <input id="capturas" type="file" accept="image/*" multiple>
+    </div>
+
+    <p class="help">
+      ✔ Campos con * son obligatorios<br>
+      ✔ Icono 512x512 obligatorio<br>
+      ✔ Mínimo 3 capturas de pantalla
+    </p>
+
   </div>
 
   <button onclick="subirApp()">Enviar App para Revisión</button>
@@ -249,20 +270,41 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.g
 
 const firebaseConfig = {
   apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
-    authDomain: "dvmulti-831ba.firebaseapp.com",
-    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
-    projectId: "dvmulti-831ba",
-    storageBucket: "dvmulti-831ba.firebasestorage.app",
-    messagingSenderId: "967026058841",
-    appId: "1:967026058841:web:02b42def3c608d9abef348",
-    measurementId: "G-PE1PLQF2H9"
+  authDomain: "dvmulti-831ba.firebaseapp.com",
+  projectId: "dvmulti-831ba",
+  storageBucket: "dvmulti-831ba.firebasestorage.app",
+  messagingSenderId: "967026058841",
+  appId: "1:967026058841:web:02b42def3c608d9abef348"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔥 SUBIR APP
+/* 🔥 CONVERTIR A BASE64 */
+function toBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
+/* 🔥 VALIDAR ICONO 512x512 */
+function validarImagen(file){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+      const ok = img.width === 512 && img.height === 512;
+      resolve(ok);
+    };
+  });
+}
+
+/* 🔥 SUBIR APP */
 window.subirApp = async function(){
 
   const user = auth.currentUser;
@@ -272,28 +314,81 @@ window.subirApp = async function(){
     return;
   }
 
+  const titulo = document.getElementById("titulo").value.trim();
+  const descripcion = document.getElementById("descripcion").value.trim();
+  const categoria = document.getElementById("categoria").value;
+  const plataforma = document.getElementById("plataforma").value;
+  const url = document.getElementById("url").value.trim();
+  const version = document.getElementById("version").value.trim();
+
+  const icono = document.getElementById("icono").files[0];
+  const capturas = document.getElementById("capturas").files;
+
+  /* VALIDACIONES */
+  if(!titulo || !descripcion || !url || !version){
+    alert("Completa los campos obligatorios (*)");
+    return;
+  }
+
+  if(!icono){
+    alert("El icono es obligatorio");
+    return;
+  }
+
+  const iconoOk = await validarImagen(icono);
+  if(!iconoOk){
+    alert("El icono debe ser 512x512");
+    return;
+  }
+
+  if(capturas.length < 3){
+    alert("Debes subir mínimo 3 capturas");
+    return;
+  }
+
+  /* CONVERTIR ICONO */
+  const iconoBase64 = await toBase64(icono);
+
+  /* CONVERTIR CAPTURAS */
+  let capturasBase64 = [];
+
+  for(let i=0;i<capturas.length;i++){
+    if(i >= 3) break; // solo 3
+    const base64 = await toBase64(capturas[i]);
+    capturasBase64.push(base64);
+  }
+
+  /* GUARDAR EN FIRESTORE */
   await addDoc(collection(db,"apps"),{
     uid:user.uid,
-    titulo:document.getElementById("titulo").value,
-    descripcion:document.getElementById("descripcion").value,
-    categoria:document.getElementById("categoria").value,
-    plataforma:document.getElementById("plataforma").value,
-    url:document.getElementById("url").value,
-    version:document.getElementById("version").value,
+    titulo,
+    descripcion,
+    categoria,
+    plataforma,
+    url,
+    version,
     tamano:document.getElementById("tamano").value,
     detalle:document.getElementById("detalle").value,
     telegram:document.getElementById("telegram").value,
     whatsapp:document.getElementById("whatsapp").value,
     estado:"pendiente",
-    fecha:serverTimestamp()
+    fecha:serverTimestamp(),
+
+    iconoBase64,
+    capturasBase64
   });
 
-  document.querySelectorAll("input,textarea").forEach(i=>i.value="");
+  /* LIMPIAR */
+  document.querySelectorAll("input,textarea").forEach(i=>{
+    if(i.type !== "file") i.value="";
+  });
+
+  document.getElementById("icono").value="";
+  document.getElementById("capturas").value="";
 
   document.getElementById("modal").style.display="flex";
 };
 
-// cerrar modal
 window.cerrarModal = function(){
   document.getElementById("modal").style.display="none";
   window.location="home";
