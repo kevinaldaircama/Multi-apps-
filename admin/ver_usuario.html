@@ -2,38 +2,75 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Usuario</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-body{margin:0;font-family:Poppins;background:#f1f5f9;}
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:#e5e7eb;
+}
 
-.container{max-width:900px;margin:auto;padding:20px;}
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:30px;
+}
 
 .card{
-  background:white;
-  padding:20px;
-  border-radius:12px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  padding:25px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+h2{
+  margin:0;
+  font-size:26px;
+}
+
+p{
+  margin:5px 0;
+  opacity:0.9;
 }
 
 button{
   padding:10px 14px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
   font-weight:600;
   margin-right:10px;
+  transition:0.2s;
 }
 
-.des{background:#ef4444;color:white;}
-.del{background:#111827;color:white;}
+button:hover{
+  transform:scale(1.05);
+}
+
+.des{
+  background:#ef4444;
+  color:white;
+}
+
+.del{
+  background:#111827;
+  color:white;
+  border:1px solid #374151;
+}
 
 .app{
-  padding:10px;
-  border:1px solid #eee;
   margin-top:10px;
+  padding:12px;
   border-radius:10px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
 }
 </style>
 </head>
@@ -74,21 +111,26 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
-    authDomain: "dvmulti-831ba.firebaseapp.com",
-    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
-    projectId: "dvmulti-831ba",
-    storageBucket: "dvmulti-831ba.firebasestorage.app",
-    messagingSenderId: "967026058841",
-    appId: "1:967026058841:web:02b42def3c608d9abef348",
-    measurementId: "G-PE1PLQF2H9"
+  authDomain: "dvmulti-831ba.firebaseapp.com",
+  databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
+  projectId: "dvmulti-831ba",
+  storageBucket: "dvmulti-831ba.firebasestorage.app",
+  messagingSenderId: "967026058841",
+  appId: "1:967026058841:web:02b42def3c608d9abef348",
+  measurementId: "G-PE1PLQF2H9"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const id = new URLSearchParams(location.search).get("id");
+// 🔐 VALIDAR ID (ARREGLA ERROR indexOf)
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
 
-let userData = null;
+if (!id) {
+  alert("No se encontró el ID del usuario");
+  location.href = "usuarios.php";
+}
 
 // USER
 async function loadUser(){
@@ -96,12 +138,16 @@ async function loadUser(){
   const ref = doc(db,"usuarios",id);
   const snap = await getDoc(ref);
 
-  if(!snap.exists()) return;
+  if (!snap.exists()) {
+    alert("Usuario no existe");
+    location.href = "usuarios.php";
+    return;
+  }
 
-  userData = snap.data();
+  const userData = snap.data();
 
-  document.getElementById("nombre").innerText = userData.nombre;
-  document.getElementById("email").innerText = userData.email;
+  document.getElementById("nombre").innerText = userData.nombre || "-";
+  document.getElementById("email").innerText = userData.email || "-";
   document.getElementById("estado").innerText = "Estado: " + (userData.estado || "Activo");
 }
 
@@ -117,14 +163,14 @@ async function loadApps(){
 
     html += `
       <div class="app">
-        <b>${d.titulo}</b><br>
-        ${d.categoria} · ${d.plataforma}<br>
-        Estado: ${d.estado}
+        <b>${d.titulo || "-"}</b><br>
+        ${d.categoria || "-"} · ${d.plataforma || "-"}<br>
+        Estado: ${d.estado || "-"}
       </div>
     `;
   });
 
-  document.getElementById("apps").innerHTML = html;
+  document.getElementById("apps").innerHTML = html || "<p>No hay apps</p>";
 }
 
 loadUser();
@@ -141,15 +187,13 @@ document.getElementById("desactivar").onclick = async () => {
   location.reload();
 };
 
-// ELIMINAR (usuario + apps)
+// ELIMINAR
 document.getElementById("eliminar").onclick = async () => {
 
   if(!confirm("Eliminar usuario y TODAS sus apps?")) return;
 
-  // borrar usuario
   await deleteDoc(doc(db,"usuarios",id));
 
-  // borrar apps
   const q = query(collection(db,"apps"), where("uid","==",id));
   const snap = await getDocs(q);
 
@@ -158,7 +202,7 @@ document.getElementById("eliminar").onclick = async () => {
   });
 
   alert("Usuario eliminado");
-  location.href = "usuario";
+  location.href = "usuarios";
 };
 
 </script>

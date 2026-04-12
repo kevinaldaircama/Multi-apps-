@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Detalle App</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -9,52 +10,74 @@
 <style>
 body{
   margin:0;
-  font-family:Poppins;
-  background:#f1f5f9;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#0f172a,#111827);
+  color:#e5e7eb;
 }
 
 .container{
-  max-width:900px;
+  max-width:950px;
   margin:auto;
   padding:20px;
 }
 
 .card{
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;
+  padding:25px;
 }
 
-h1{margin-bottom:10px;}
+h1{
+  margin:0 0 10px 0;
+  font-size:24px;
+}
 
 .meta{
-  color:#6b7280;
   font-size:14px;
-  line-height:1.6;
+  line-height:1.8;
+  color:#cbd5e1;
 }
 
+.meta b{
+  color:#fff;
+}
+
+hr{
+  border:0;
+  border-top:1px solid rgba(255,255,255,0.1);
+  margin:10px 0;
+}
+
+/* BOTONES */
 .btns{
-  margin-top:15px;
+  margin-top:20px;
   display:flex;
   gap:10px;
+  flex-wrap:wrap;
 }
 
 button{
   padding:10px 14px;
   border:none;
-  border-radius:8px;
-  cursor:pointer;
+  border-radius:10px;
   font-weight:600;
+  cursor:pointer;
 }
 
 .aprobar{background:#22c55e;color:white;}
 .rechazar{background:#ef4444;color:white;}
-.eliminar{background:#111827;color:white;}
+.eliminar{background:#111827;color:white;border:1px solid #374151;}
 
 button:disabled{
   opacity:0.5;
   cursor:not-allowed;
+}
+
+a{
+  color:#38bdf8;
+  text-decoration:none;
 }
 </style>
 </head>
@@ -79,6 +102,8 @@ button:disabled{
 
 </div>
 
+<!-- SOLO REEMPLAZA TU HTML INTERNO (info + render) -->
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -93,31 +118,22 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyBLZdhjEPY3iOuU6F6zlPwub38Qbzny2f8",
-    authDomain: "dvmulti-831ba.firebaseapp.com",
-    databaseURL: "https://dvmulti-831ba-default-rtdb.firebaseio.com",
-    projectId: "dvmulti-831ba",
-    storageBucket: "dvmulti-831ba.firebasestorage.app",
-    messagingSenderId: "967026058841",
-    appId: "1:967026058841:web:02b42def3c608d9abef348",
-    measurementId: "G-PE1PLQF2H9"
+  authDomain: "dvmulti-831ba.firebaseapp.com",
+  projectId: "dvmulti-831ba",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 FIX CRÍTICO: evitar null ID
-const params = new URLSearchParams(location.search);
-const id = params.get("id");
+const id = new URLSearchParams(location.search).get("id");
 
 let dataApp = null;
 
-// si NO hay id, detener todo
 if(!id){
   document.getElementById("titulo").innerText = "ID no válido";
   throw new Error("No ID");
 }
 
-// 🔥 CARGAR APP
 async function load(){
 
   const ref = doc(db,"apps",id);
@@ -130,23 +146,68 @@ async function load(){
 
   dataApp = snap.data();
 
-  document.getElementById("titulo").innerText = dataApp.titulo || "Sin título";
+  document.getElementById("titulo").innerText = dataApp.titulo ?? "Sin título";
 
-  document.getElementById("info").innerHTML = `
-    <b>Usuario:</b> ${dataApp.nombre || "-"}<br>
-    <b>Email:</b> ${dataApp.email || "-"}<br>
-    <b>Categoría:</b> ${dataApp.categoria || "-"}<br>
-    <b>Plataforma:</b> ${dataApp.plataforma || "-"}<br>
-    <b>Estado:</b> ${dataApp.estado || "-"}<br>
-    <b>Versión:</b> ${dataApp.version || "-"}<br>
-    <b>Tamaño:</b> ${dataApp.tamano || "-"}<br>
-    <b>Licencia:</b> ${dataApp.licencia || "-"}<br>
-    <b>Descargas:</b> ${dataApp.descargas || 0}<br>
-    <b>URL:</b> ${dataApp.url || "-"}<br>
-    <b>Descripción:</b> ${dataApp.detalle || "-"}<br>
+  /* 🔥 ICONO + INFO */
+  let html = `
+    <div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:15px;">
+      ${dataApp.iconoBase64 ? `
+        <img src="${dataApp.iconoBase64}" style="width:80px;height:80px;border-radius:16px;border:1px solid #333;">
+      ` : ""}
+
+      <div>
+        <b>Usuario:</b> ${dataApp.nombre ?? "-"}<br>
+        <b>Email:</b> ${dataApp.email ?? "-"}<br>
+        <b>UID:</b> ${dataApp.uid ?? "-"}
+      </div>
+    </div>
+
+    <hr>
+
+    <b>Título:</b> ${dataApp.titulo ?? "-"}<br>
+    <b>Descripción:</b> ${dataApp.descripcion ?? "-"}<br>
+    <b>Detalle:</b> ${dataApp.detalle ?? "-"}<br>
+
+    <hr>
+
+    <b>Categoría:</b> ${dataApp.categoria ?? "-"}<br>
+    <b>Plataforma:</b> ${dataApp.plataforma ?? "-"}<br>
+    <b>Estado:</b> ${dataApp.estado ?? "-"}<br>
+
+    <hr>
+
+    <b>Versión:</b> ${dataApp.version ?? "-"}<br>
+    <b>Tamaño:</b> ${dataApp.tamano ?? "-"}<br>
+
+    <hr>
+
+    <b>URL:</b> ${
+      dataApp.url
+        ? `<a href="${dataApp.url}" target="_blank">Abrir app</a>`
+        : "-"
+    }<br>
+
+    <b>Telegram:</b> ${dataApp.telegram ?? "-"}<br>
+    <b>WhatsApp:</b> ${dataApp.whatsapp ?? "-"}<br>
   `;
 
-  // activar botones SOLO si hay data
+  /* 🔥 CAPTURAS */
+  if(dataApp.capturasBase64 && dataApp.capturasBase64.length > 0){
+
+    html += `<hr><b>Capturas:</b><br><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px;">`;
+
+    dataApp.capturasBase64.forEach(img=>{
+      html += `
+        <img src="${img}"
+        style="width:100%;border-radius:10px;border:1px solid #333;">
+      `;
+    });
+
+    html += `</div>`;
+  }
+
+  document.getElementById("info").innerHTML = html;
+
   document.getElementById("btnAprobar").disabled = false;
   document.getElementById("btnRechazar").disabled = false;
   document.getElementById("btnEliminar").disabled = false;
@@ -154,7 +215,7 @@ async function load(){
 
 load();
 
-// ✅ APROBAR
+/* APROBAR */
 document.getElementById("btnAprobar").onclick = async () => {
 
   await updateDoc(doc(db,"apps",id),{
@@ -162,52 +223,50 @@ document.getElementById("btnAprobar").onclick = async () => {
   });
 
   await addDoc(collection(db,"notificaciones"),{
-    uid: dataApp?.uid || "",
-    titulo:"App aprobada",
-    mensaje:"Tu app fue aprobada 🎉",
-    estado:"aprobada",
-    url: dataApp?.url || ""
+    uid: dataApp.uid,
+    titulo:"App aprobada 🎉",
+    mensaje:"Tu app fue aprobada",
+    tipo:"aprobada",
+    url:dataApp.url
   });
 
-  alert("App aprobada");
+  alert("Aprobada");
   location.reload();
 };
 
-// ❌ RECHAZAR
+/* RECHAZAR */
 document.getElementById("btnRechazar").onclick = async () => {
 
-  let motivo = prompt("Escribe el motivo del rechazo:");
-
+  let motivo = prompt("Motivo del rechazo:");
   if(!motivo) return;
 
   await updateDoc(doc(db,"apps",id),{
     estado:"rechazada",
-    motivo: motivo
+    motivo
   });
 
   await addDoc(collection(db,"notificaciones"),{
-    uid: dataApp?.uid || "",
+    uid: dataApp.uid,
     titulo:"App rechazada",
     mensaje:"Tu app fue rechazada",
-    estado:"rechazada",
-    motivo: motivo
+    tipo:"rechazada",
+    motivo
   });
 
-  alert("App rechazada");
+  alert("Rechazada");
   location.reload();
 };
 
-// 🗑 ELIMINAR
+/* ELIMINAR */
 document.getElementById("btnEliminar").onclick = async () => {
 
-  if(!confirm("¿Eliminar esta app?")) return;
+  if(!confirm("Eliminar app?")) return;
 
   await deleteDoc(doc(db,"apps",id));
 
-  alert("App eliminada");
-  location.href = "apps.php";
+  alert("Eliminada");
+  location.href="apps";
 };
-
 </script>
 
 </body>
